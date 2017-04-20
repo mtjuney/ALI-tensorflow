@@ -47,36 +47,8 @@ def main():
         from models.cifar10 import ALI
         ali = ALI(z_dim=z_dim, image_shape=image_shape, raw_marginal=raw_marginal)
         print('Model : cifar10')
-
-    elif args.experiment == 'cifar10_new':
-        num_epoch = 7000
-        batch_size = 100
-        z_dim = 64
-        image_shape = (32, 32, 3)
-
-        from datasets.cifar10 import load_cifar10
-        data, data_val = load_cifar10(args.data_dir)
-
-        raw_marginal = data[np.random.permutation(len(data))[:500]]
-        sample_x = data_val[:batch_size]
-
-        from models.cifar10_new import ALI
-        ali = ALI(z_dim=z_dim, image_shape=image_shape, raw_marginal=raw_marginal)
-        print('Model : cifar10_new')
-
-    elif args.experiment == 'mnist':
-        num_epoch = 7000
-        batch_size = 100
-        z_dim = 64
-        image_shape = (28, 28, 1)
-
-        from datasets.mnist import load_mnist
-        data = load_mnist(args.data_dir)
-
-        raw_marginal = data[np.random.permutation(len(data))[:500]]
-
-        from models.mnist import ALI
-        ali = ALI(z_dim=z_dim, image_shape=image_shape, raw_marginal=raw_marginal)
+    else:
+        raise
 
     sample_z = np.random.normal(size=(batch_size, 1, 1, z_dim)).astype(np.float32)
 
