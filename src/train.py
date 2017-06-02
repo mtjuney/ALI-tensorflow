@@ -1,15 +1,13 @@
 import tensorflow as tf
 import numpy as np
 
-import matplotlib as mpl
-mpl.use('Agg')
-import matplotlib.pyplot as plt
-from mpl_toolkits.axes_grid1 import ImageGrid
 from tqdm import tqdm
-
 from pathlib import Path
 
 import argparse
+
+import utils
+
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--experiment', '-e', default='cifar10')
