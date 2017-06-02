@@ -18,6 +18,7 @@ parser.add_argument('--log_dir', '-l', default='log')
 parser.add_argument('--checkpoint_dir', '-c', default='checkpoint')
 parser.add_argument('--sample_dir', '-s', default='sample')
 parser.add_argument('--save_dir', default='out/cifar10')
+parser.add_argument('--load_model', default=None, type=str)
 args = parser.parse_args()
 
 save_dir = Path(args.save_dir)
@@ -77,11 +78,15 @@ def main():
 
         tf.global_variables_initializer().run()
 
+        if args.load_model is not None:
+            saver.restore(sess=sess, save_path=args.load_model)
+
         global_step = 0
 
         for epoch in range(num_epoch):
-            perm = np.random.permutation(data_size)
 
+            # Train
+            perm = np.random.permutation(data_size)
             for idx in tqdm(range(0, len(data), batch_size), desc='[Epoch {}/{}]'.format(epoch, num_epoch)):
 
                 perm_ = perm[idx:idx+batch_size]
@@ -93,27 +98,21 @@ def main():
                 feeds = {ali.input_x: batch_x, ali.input_z: batch_z, ali.train_g: True, ali.train_d: True}
                 sess.run(ali.optims, feed_dict=feeds)
 
-
                 global_step += 1
 
-                if global_step % 100 == 2:
-                    feeds = {ali.input_x: sample_x, ali.input_z: sample_z, ali.train_g: False, ali.train_d: False}
-                    summaries_, images = sess.run([summaries, ali.G_x], feed_dict=feeds)
-                    writer.add_summary(summaries_, global_step)
 
-                    if images.shape[-1] == 1:
-                        broad = np.zeros(images.shape[:-1] + (3,)).astype(np.float32)
-                        broad += images
-                        images = broad
-                    figure = plt.figure()
-                    grid = ImageGrid(figure, 111, (10, batch_size // 10), axes_pad=0.1)
-                    for image, axis in zip(images, grid):
-                        axis.imshow(image)
-                        axis.set_yticklabels(['' for _ in range(image.shape[0])])
-                        axis.set_xticklabels(['' for _ in range(image.shape[1])])
-                        axis.axis('off')
-                    plt.savefig(str(sample_dir / 'step_{}.png'.format(global_step)), transparent=True, bbox_inches='tight')
-                    plt.close(figure)
+            # Validation
+            feeds = {ali.input_x: sample_x, ali.input_z: sample_z, ali.train_g: False, ali.train_d: False}
+            summaries_, samples, resamples = sess.run([summaries, ali.G_x, ali.resampler], feed_dict=feeds)
+            writer.add_summary(summaries_, global_step)
+
+            if samples.shape[-1] == 1:
+                broad = np.zeros(samples.shape[:-1] + (3,)).astype(np.float32)
+                broad += samples
+                samples = broad
+
+            utils.save_images(str(sample_dir / 'step_{}.png'.format(global_step)), samples)
+            utils.save_images(str(sample_dir / 'reconst_step_{}.png'.format(global_step)), resamples)
 
             print('[Epoch {}] Save Parameters'.format(epoch))
             saver.save(sess, str(checkpoint_dir / 'model'), global_step=global_step)

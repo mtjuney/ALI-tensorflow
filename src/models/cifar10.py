@@ -55,7 +55,6 @@ class ALI:
         self.d_optim = tf.train.AdamOptimizer(lr, beta1, beta2).minimize(self.d_loss, var_list=self.d_vars)
         self.g_optim = tf.train.AdamOptimizer(lr, beta1, beta2).minimize(self.g_loss, var_list=self.gx_vars+self.gz_vars)
 
-
         self.optims = [self.d_optim, self.g_optim]
 
         print('----- Discriminator Variables -----')
