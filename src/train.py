@@ -100,9 +100,9 @@ def main():
 
             # Train
             perm = np.random.permutation(data_size)
-            for idx in tqdm(range(0, len(data), batch_size), desc='[Epoch {}/{}]'.format(epoch, num_epoch)):
+            for idx in tqdm(range(len(data) // batch_size), desc='[Epoch {}/{}]'.format(epoch, num_epoch)):
 
-                perm_ = perm[idx:idx+batch_size]
+                perm_ = perm[idx*batch_size:(idx+1)*batch_size]
 
                 batch_x = data[perm_]
                 batch_z = np.random.normal(size=(batch_size, 1, 1, z_dim)).astype(np.float32)
