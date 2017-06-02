@@ -46,6 +46,21 @@ def main():
         from models.cifar10 import ALI
         ali = ALI(z_dim=z_dim, image_shape=image_shape, raw_marginal=raw_marginal)
         print('Model : cifar10')
+    elif args.experiment == 'imagenet':
+        num_epoch = 1000
+        batch_size = 128
+        z_dim = 256
+        image_shape = (64, 64, 3)
+
+        from datasets.imagenet import load_imagenet
+        data, data_val = load_imagenet(args.data_dir)
+
+        raw_marginal = data[np.random.permutation(len(data))[:500]]
+        sample_x = data_val[:batch_size]
+
+        from models.imagenet import ALI
+        ali = ALI(z_dim=z_dim, image_shape=image_shape, raw_marginal=raw_marginal)
+        print('Model : imagenet')
     else:
         raise
 
